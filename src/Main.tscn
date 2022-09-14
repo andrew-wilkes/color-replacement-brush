@@ -117,7 +117,11 @@ size_flags_vertical = 3
 [node name="c" type="CanvasLayer" parent="."]
 
 [node name="FileDialog" type="FileDialog" parent="c"]
-margin_right = 315.0
-margin_bottom = 130.0
+margin_right = 874.0
+margin_bottom = 476.0
 access = 2
 filters = PoolStringArray( "*.jpg,*.jpeg,*.png,*.webp,*.tga,*.bmp ; Image files" )
+
+[connection signal="pressed" from="Panel/M/VB/LoadImage" to="." method="_on_LoadImage_pressed"]
+[connection signal="pressed" from="Panel/M/VB/SaveImage" to="." method="_on_SaveImage_pressed"]
+[connection signal="file_selected" from="c/FileDialog" to="." method="_on_FileDialog_file_selected"]
