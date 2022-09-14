@@ -203,5 +203,6 @@ one_shot = true
 [connection signal="pressed" from="Panel/M/VB/SaveImage" to="." method="_on_SaveImage_pressed"]
 [connection signal="gui_input" from="VP" to="." method="_on_VP_gui_input"]
 [connection signal="file_selected" from="c/FileDialog" to="." method="_on_FileDialog_file_selected"]
+[connection signal="popup_hide" from="c/FileDialog" to="." method="_on_FileDialog_popup_hide"]
 [connection signal="popup_hide" from="c/HelpDialog" to="." method="_on_HelpDialog_popup_hide"]
 [connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]

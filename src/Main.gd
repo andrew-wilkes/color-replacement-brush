@@ -38,6 +38,8 @@ func _on_SaveImage_pressed():
 
 
 func show_file_dialog():
+	# Allow the popup to be closed after loading image
+	disable_viewport_input()
 	file_dialog.current_path = ""
 	file_dialog.current_file = ""
 	file_dialog.popup_centered()
@@ -104,7 +106,7 @@ func _on_Help_pressed():
 
 
 func _on_HelpDialog_popup_hide():
-	$VP/Viewport.gui_disable_input = false
+	disable_viewport_input(false)
 
 
 func _on_Similarity_value_changed(value):
@@ -121,3 +123,13 @@ func _on_TargetColor_color_changed(color):
 
 func _on_ReplacementColor_color_changed(color):
 	settings.replacement_color = color
+
+
+func disable_viewport_input(disable = true):
+	$VP/Viewport.gui_disable_input = disable
+	# Get the cross cursor back
+	get_node("%Image").grab_focus()
+
+
+func _on_FileDialog_popup_hide():
+	disable_viewport_input(false)
