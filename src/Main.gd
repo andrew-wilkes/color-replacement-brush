@@ -38,9 +38,18 @@ func _on_FileDialog_file_selected(path):
 	match file_mode:
 		LOADING:
 			settings.load_dir = path.get_base_dir()
+			load_image(path)
 		SAVING:
 			settings.save_dir = path.get_base_dir()
 	print(path)
+
+
+func load_image(path):
+	var texture = ImageTexture.new()
+	var image = Image.new()
+	image.load(path)
+	texture.create_from_image(image)
+	$Image.texture = texture
 
 
 func _unhandled_input(event):
