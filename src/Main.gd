@@ -2,10 +2,14 @@ extends HBoxContainer
 
 enum { SAVING, LOADING }
 
+const dead_zone = Vector2(8, 8)
+
 onready var file_dialog: FileDialog = $c/FileDialog
 
-var settings
+var settings: Settings
 var file_mode
+var cursor_position = Vector2.ZERO
+var cursor_visible = false
 
 func _init():
 	settings = Settings.new()
@@ -13,22 +17,27 @@ func _init():
 
 
 func _ready():
-	pass
+	get_node("%TargetColor").color = settings.target_color
+	get_node("%Similarity").value = settings.similarity
+	get_node("%Proximity").value = settings.proxity
+	get_node("%ReplacementColor").color = settings.replacement_color
 
 
 func _on_LoadImage_pressed():
 	file_mode = LOADING
 	file_dialog.mode = FileDialog.MODE_OPEN_FILE
 	file_dialog.current_dir = settings.load_dir
-	file_dialog.current_path = ""
-	file_dialog.current_file = ""
-	file_dialog.popup_centered()
+	show_file_dialog()
 
 
 func _on_SaveImage_pressed():
 	file_mode = SAVING
 	file_dialog.mode = FileDialog.MODE_SAVE_FILE
 	file_dialog.current_dir = settings.save_dir
+	show_file_dialog()
+
+
+func show_file_dialog():
 	file_dialog.current_path = ""
 	file_dialog.current_file = ""
 	file_dialog.popup_centered()
@@ -41,7 +50,6 @@ func _on_FileDialog_file_selected(path):
 			load_image(path)
 		SAVING:
 			settings.save_dir = path.get_base_dir()
-	print(path)
 
 
 func load_image(path):
@@ -49,7 +57,7 @@ func load_image(path):
 	var image = Image.new()
 	image.load(path)
 	texture.create_from_image(image)
-	$Image.texture = texture
+	get_node("%Image").texture = texture
 
 
 func _unhandled_input(event):
@@ -69,4 +77,47 @@ func save_and_quit():
 	get_tree().quit()
 
 
+func _draw():
+	if cursor_visible:
+		draw_circle(cursor_position + $VP.rect_position, 8.0, Color(0.1, 1.0, 0.0, 0.6))
 
+
+func _on_VP_gui_input(event):
+	if event is InputEventMouseMotion:
+		cursor_position = event.position # - $M/VP.rect_position
+		cursor_visible = Rect2(dead_zone, $VP.rect_size - 2 * dead_zone).has_point(cursor_position)
+		update()
+
+
+func _on_Main_resized():
+	$VP/Viewport.size = Vector2.ZERO
+	$Timer.start()
+
+
+func _on_Timer_timeout():
+	$VP/Viewport.size = $VP.rect_size
+
+
+func _on_Help_pressed():
+	$VP/Viewport.gui_disable_input = true
+	$c/HelpDialog.popup_centered()
+
+
+func _on_HelpDialog_popup_hide():
+	$VP/Viewport.gui_disable_input = false
+
+
+func _on_Similarity_value_changed(value):
+	settings.similarity = value
+
+
+func _on_Proximity_value_changed(value):
+	settings.proxity = value
+
+
+func _on_TargetColor_color_changed(color):
+	settings.target_color = color
+
+
+func _on_ReplacementColor_color_changed(color):
+	settings.replacement_color = color

@@ -6,8 +6,8 @@ const FILENAME = "user://settings.res"
 
 export var load_dir = ""
 export var save_dir = ""
-export var tolerance = 0.0
-export var brush_size = 16
+export var similarity = 0.0
+export var proxity = 16
 export var target_color = Color.white
 export var replacement_color = Color.green
 
