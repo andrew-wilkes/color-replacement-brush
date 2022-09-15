@@ -93,7 +93,6 @@ func _on_Image_gui_input(event):
 		var mouse_state = Input.get_mouse_button_mask()
 		if mouse_state > 0:
 			update_cells(cursor_position.x, cursor_position.y, mouse_state == BUTTON_MASK_LEFT)
-		update()
 
 
 func _on_Main_resized():
@@ -204,3 +203,21 @@ func resize_num_cells(area: Vector2):
 
 func update_cells(x, y, add):
 	cells[int(x) / settings.cell_size + num_cols * int(y) / settings.cell_size] = 0xff if add else 0
+	update_rects()
+
+
+func update_rects():
+	var rects = get_node("%Image").rects
+	var size = Vector2(settings.cell_size, settings.cell_size)
+	rects.clear()
+	var pos = Vector2.ZERO
+	var idx = 0
+	for col in num_cols:
+		for row in num_rows:
+			if cells[idx] > 0:
+				rects.append(Rect2(pos, size))
+			pos.x += settings.cell_size
+			idx += 1
+		pos.y += settings.cell_size
+		pos.x = 0
+	get_node("%Image").update()
