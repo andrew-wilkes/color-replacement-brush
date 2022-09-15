@@ -19,8 +19,10 @@ func _init():
 func _ready():
 	get_node("%TargetColor").color = settings.target_color
 	get_node("%Similarity").value = settings.similarity
-	get_node("%Proximity").value = settings.proxity
+	get_node("%Proximity").value = settings.cell_size
 	get_node("%ReplacementColor").color = settings.replacement_color
+	init_cells($VP.rect_size)
+	Input.use_accumulated_input = true
 
 
 func _on_LoadImage_pressed():
@@ -84,10 +86,13 @@ func _draw():
 		draw_circle(cursor_position + $VP.rect_position, 8.0, Color(0.1, 1.0, 0.0, 0.6))
 
 
-func _on_VP_gui_input(event):
+func _on_Image_gui_input(event):
 	if event is InputEventMouseMotion:
-		cursor_position = event.position # - $M/VP.rect_position
+		cursor_position = event.position
 		cursor_visible = Rect2(dead_zone, $VP.rect_size - 2 * dead_zone).has_point(cursor_position)
+		var mouse_state = Input.get_mouse_button_mask()
+		if mouse_state > 0:
+			update_cells(cursor_position.x, cursor_position.y, mouse_state == BUTTON_MASK_LEFT)
 		update()
 
 
@@ -98,6 +103,7 @@ func _on_Main_resized():
 
 func _on_Timer_timeout():
 	$VP/Viewport.size = $VP.rect_size
+	resize_num_cells($VP.rect_size)
 
 
 func _on_Help_pressed():
@@ -114,7 +120,7 @@ func _on_Similarity_value_changed(value):
 
 
 func _on_Proximity_value_changed(value):
-	settings.proxity = value
+	settings.cell_size = int(value)
 
 
 func _on_TargetColor_color_changed(color):
@@ -133,3 +139,68 @@ func disable_viewport_input(disable = true):
 
 func _on_FileDialog_popup_hide():
 	disable_viewport_input(false)
+
+var cells = PoolByteArray()
+var num_rows = 32
+var num_cols = 32
+
+func init_cells(area: Vector2):
+	num_rows = int(area.y) / settings.cell_size
+	num_cols = int(area.x) / settings.cell_size
+	var a = []
+	a.resize(num_rows * num_cols)
+	a.fill(0)
+	cells = PoolByteArray(a)
+
+
+func resize_cells(new_cell_size: int):
+	var new_cells = PoolByteArray()
+	var factor = new_cell_size / settings.cell_size
+	var num_new_rows = num_rows * factor
+	var num_new_cols = num_cols * factor
+	new_cells.resize(num_new_rows * num_new_cols)
+	var idx1 = 0
+	var idx2 = 0
+	if new_cell_size > settings.cell_size:
+		for row in num_rows:
+			for col in num_cols:
+				for y in factor:
+					for x in factor:
+						new_cells[idx2] = cells[idx1]
+						idx2 += 1
+				idx1 += 1
+	else:
+		for row in num_rows:
+			for col in num_cols:
+				var n = 0
+				for y in factor:
+					for x in factor:
+						n += cells[idx1]
+						idx1 += 1
+				new_cells[idx2] = n
+				idx2 += 1
+	cells = new_cells
+
+
+# Expand cells size if area grows
+func resize_num_cells(area: Vector2):
+	var num_new_cols = int(area.x) / settings.cell_size
+	var num_new_rows = int(area.y) / settings.cell_size
+	if num_new_cols > num_cols or num_new_rows > num_rows:
+		var new_cells = PoolByteArray()
+		new_cells.resize(num_new_rows * num_new_cols)
+		var idx = 0
+		var new_idx = 0
+		for row in num_new_rows:
+			for col in num_new_cols:
+				if row < num_rows and col < num_cols:
+					new_cells[new_idx] = cells[idx]
+					idx += 1
+				else:
+					new_cells[new_idx] = 0
+				new_idx += 1
+		cells = new_cells
+
+
+func update_cells(x, y, add):
+	cells[int(x) / settings.cell_size + num_cols * int(y) / settings.cell_size] = 0xff if add else 0

@@ -7,7 +7,7 @@ const FILENAME = "user://settings.res"
 export var load_dir = ""
 export var save_dir = ""
 export var similarity = 0.0
-export var proxity = 16
+export var cell_size = 8
 export var target_color = Color.white
 export var replacement_color = Color.green
 
