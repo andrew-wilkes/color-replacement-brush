@@ -21,7 +21,6 @@ func _ready():
 	get_node("%Similarity").value = settings.similarity
 	get_node("%Proximity").value = settings.cell_size
 	get_node("%ReplacementColor").color = settings.replacement_color
-	init_cells($VP.rect_size)
 	Input.use_accumulated_input = true
 
 
@@ -62,6 +61,7 @@ func load_image(path):
 	image.load(path)
 	texture.create_from_image(image)
 	get_node("%Image").texture = texture
+	init_cells(image.get_size())
 
 
 func _unhandled_input(event):
@@ -93,16 +93,6 @@ func _on_Image_gui_input(event):
 		var mouse_state = Input.get_mouse_button_mask()
 		if mouse_state > 0:
 			update_cells(cursor_position.x, cursor_position.y, mouse_state == BUTTON_MASK_LEFT)
-
-
-func _on_Main_resized():
-	$VP/Viewport.size = Vector2.ZERO
-	$Timer.start()
-
-
-func _on_Timer_timeout():
-	$VP/Viewport.size = $VP.rect_size
-	resize_num_cells($VP.rect_size)
 
 
 func _on_Help_pressed():
@@ -181,29 +171,12 @@ func resize_cells(new_cell_size: int):
 	cells = new_cells
 
 
-# Expand cells size if area grows
-func resize_num_cells(area: Vector2):
-	var num_new_cols = int(area.x) / settings.cell_size
-	var num_new_rows = int(area.y) / settings.cell_size
-	if num_new_cols > num_cols or num_new_rows > num_rows:
-		var new_cells = PoolByteArray()
-		new_cells.resize(num_new_rows * num_new_cols)
-		var idx = 0
-		var new_idx = 0
-		for row in num_new_rows:
-			for col in num_new_cols:
-				if row < num_rows and col < num_cols:
-					new_cells[new_idx] = cells[idx]
-					idx += 1
-				else:
-					new_cells[new_idx] = 0
-				new_idx += 1
-		cells = new_cells
-
-
 func update_cells(x, y, add):
-	cells[int(x) / settings.cell_size + num_cols * int(y) / settings.cell_size] = 0xff if add else 0
-	update_rects()
+	var col = int(x / settings.cell_size)
+	var row = int(y / settings.cell_size)
+	if col < num_cols and row < num_rows:
+		cells[col + num_cols * row] = 0xff if add else 0
+		update_rects()
 
 
 func update_rects():
@@ -212,8 +185,8 @@ func update_rects():
 	rects.clear()
 	var pos = Vector2.ZERO
 	var idx = 0
-	for col in num_cols:
-		for row in num_rows:
+	for row in num_rows:
+		for col in num_cols:
 			if cells[idx] > 0:
 				rects.append(Rect2(pos, size))
 			pos.x += settings.cell_size
@@ -221,3 +194,12 @@ func update_rects():
 		pos.y += settings.cell_size
 		pos.x = 0
 	get_node("%Image").update()
+
+
+func _on_Main_resized():
+	$VP/Viewport.size = Vector2.ZERO
+	$Timer.start()
+
+
+func _on_Timer_timeout():
+	$VP/Viewport.size = $VP.rect_size
