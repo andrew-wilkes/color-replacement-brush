@@ -2,7 +2,7 @@ extends HBoxContainer
 
 enum { SAVING, LOADING }
 
-const DEAD_ZONE = Vector2(8, 8)
+const DEAD_ZONE = Vector2(8, 8) # To be able to detect mouse movements before exiting the image area
 const CELL_SIZE = 4 # e.g. 4 x 4 pixels square
 
 onready var file_dialog: FileDialog = $c/FileDialog
@@ -86,14 +86,10 @@ func save_and_quit():
 	get_tree().quit()
 
 
-func _draw():
-	if cursor_visible:
-		draw_circle(cursor_position + $VP.rect_position, 8.0, Color(0.1, 1.0, 0.0, 0.6))
-
-
 func _on_Image_gui_input(event):
 	if event is InputEventMouseMotion:
 		cursor_position = event.position
+		# May not need this unless wanting to display an overlay around the cursor
 		cursor_visible = Rect2(DEAD_ZONE, $VP.rect_size - 2 * DEAD_ZONE).has_point(cursor_position)
 		var mouse_state = Input.get_mouse_button_mask()
 		if mouse_state > 0:
@@ -140,7 +136,7 @@ func init_cells(_area: Vector2):
 	# Want to at least cover the image area with the grid of cells
 	num_rows = int(round(area.y / CELL_SIZE))
 	num_cols = int(round(area.x / CELL_SIZE))
-	cells = PoolByteArray() # Later use this as shader texture data
+	cells = PoolByteArray() # Later use this as shader input data
 	cells.resize(num_rows * num_cols)
 	for idx in cells.size():
 		cells[idx] = 0
@@ -149,8 +145,8 @@ func init_cells(_area: Vector2):
 func update_cells(x, y, add):
 	var col = int(x / CELL_SIZE)
 	var row = int(y / CELL_SIZE)
-	# Nate: holding the mouse button down and moving outside of the grid
-	# causes calls to be made still
+	# Note: holding the mouse button down and moving outside of the grid
+	# still causes calls to be made but it doesn't matter
 	var cell_value = 0xff if add else 0
 	if settings.proximity > 0:
 		for y in range(-settings.proximity, settings.proximity + 1):
@@ -166,6 +162,7 @@ func update_cell(col, row, cell_value):
 		cells[col + num_cols * row] = cell_value
 
 
+# Temporary until the shader is written
 func update_rects():
 	var rects = get_node("%Image").rects
 	var size = Vector2(CELL_SIZE, CELL_SIZE)
@@ -184,6 +181,7 @@ func update_rects():
 
 
 func _on_Main_resized():
+	# Allow the Viewport to be reduced in size and throttle how often it does so
 	$VP/Viewport.size = Vector2.ZERO
 	$Timer.start()
 
