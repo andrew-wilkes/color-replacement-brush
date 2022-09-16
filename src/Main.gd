@@ -2,7 +2,8 @@ extends HBoxContainer
 
 enum { SAVING, LOADING }
 
-const dead_zone = Vector2(8, 8)
+const DEAD_ZONE = Vector2(8, 8)
+const CELL_SIZE = 4 # e.g. 4 x 4 pixels square
 
 onready var file_dialog: FileDialog = $c/FileDialog
 
@@ -10,6 +11,10 @@ var settings: Settings
 var file_mode
 var cursor_position = Vector2.ZERO
 var cursor_visible = false
+var cells = PoolByteArray()
+var num_rows = 32
+var num_cols = 32
+var area
 
 func _init():
 	settings = Settings.new()
@@ -19,7 +24,7 @@ func _init():
 func _ready():
 	get_node("%TargetColor").color = settings.target_color
 	get_node("%Similarity").value = settings.similarity
-	get_node("%Proximity").value = settings.cell_size
+	get_node("%Proximity").value = log(settings.proximity) / log(2)
 	get_node("%ReplacementColor").color = settings.replacement_color
 	Input.use_accumulated_input = true
 
@@ -89,7 +94,7 @@ func _draw():
 func _on_Image_gui_input(event):
 	if event is InputEventMouseMotion:
 		cursor_position = event.position
-		cursor_visible = Rect2(dead_zone, $VP.rect_size - 2 * dead_zone).has_point(cursor_position)
+		cursor_visible = Rect2(DEAD_ZONE, $VP.rect_size - 2 * DEAD_ZONE).has_point(cursor_position)
 		var mouse_state = Input.get_mouse_button_mask()
 		if mouse_state > 0:
 			update_cells(cursor_position.x, cursor_position.y, mouse_state == BUTTON_MASK_LEFT)
@@ -109,7 +114,8 @@ func _on_Similarity_value_changed(value):
 
 
 func _on_Proximity_value_changed(value):
-	settings.cell_size = int(value)
+	if cells.size() > 0:
+		settings.proximity = value
 
 
 func _on_TargetColor_color_changed(color):
@@ -129,59 +135,41 @@ func disable_viewport_input(disable = true):
 func _on_FileDialog_popup_hide():
 	disable_viewport_input(false)
 
-var cells = PoolByteArray()
-var num_rows = 32
-var num_cols = 32
 
-func init_cells(area: Vector2):
-	num_rows = int(area.y) / settings.cell_size
-	num_cols = int(area.x) / settings.cell_size
-	var a = []
-	a.resize(num_rows * num_cols)
-	a.fill(0)
-	cells = PoolByteArray(a)
-
-
-func resize_cells(new_cell_size: int):
-	var new_cells = PoolByteArray()
-	var factor = new_cell_size / settings.cell_size
-	var num_new_rows = num_rows * factor
-	var num_new_cols = num_cols * factor
-	new_cells.resize(num_new_rows * num_new_cols)
-	var idx1 = 0
-	var idx2 = 0
-	if new_cell_size > settings.cell_size:
-		for row in num_rows:
-			for col in num_cols:
-				for y in factor:
-					for x in factor:
-						new_cells[idx2] = cells[idx1]
-						idx2 += 1
-				idx1 += 1
-	else:
-		for row in num_rows:
-			for col in num_cols:
-				var n = 0
-				for y in factor:
-					for x in factor:
-						n += cells[idx1]
-						idx1 += 1
-				new_cells[idx2] = n
-				idx2 += 1
-	cells = new_cells
+func init_cells(_area: Vector2):
+	area = _area
+	# Want to at least cover the image area with the grid of cells
+	num_rows = int(round(area.y / CELL_SIZE))
+	num_cols = int(round(area.x / CELL_SIZE))
+	cells = PoolByteArray() # Later use this as shader texture data
+	cells.resize(num_rows * num_cols)
+	for idx in cells.size():
+		cells[idx] = 0
 
 
 func update_cells(x, y, add):
-	var col = int(x / settings.cell_size)
-	var row = int(y / settings.cell_size)
-	if col < num_cols and row < num_rows:
-		cells[col + num_cols * row] = 0xff if add else 0
-		update_rects()
+	var col = int(x / CELL_SIZE)
+	var row = int(y / CELL_SIZE)
+	# Nate: holding the mouse button down and moving outside of the grid
+	# causes calls to be made still
+	var cell_value = 0xff if add else 0
+	if settings.proximity > 0:
+		for y in range(-settings.proximity, settings.proximity + 1):
+			for x in range(-settings.proximity, settings.proximity + 1):
+				update_cell(col + x, row + y, cell_value)
+	else:
+		update_cell(col, row, cell_value)
+	update_rects()
+
+
+func update_cell(col, row, cell_value):
+	if col < num_cols and row < num_rows and col >= 0 and row >= 0:
+		cells[col + num_cols * row] = cell_value
 
 
 func update_rects():
 	var rects = get_node("%Image").rects
-	var size = Vector2(settings.cell_size, settings.cell_size)
+	var size = Vector2(CELL_SIZE, CELL_SIZE)
 	rects.clear()
 	var pos = Vector2.ZERO
 	var idx = 0
@@ -189,9 +177,9 @@ func update_rects():
 		for col in num_cols:
 			if cells[idx] > 0:
 				rects.append(Rect2(pos, size))
-			pos.x += settings.cell_size
+			pos.x += CELL_SIZE
 			idx += 1
-		pos.y += settings.cell_size
+		pos.y += CELL_SIZE
 		pos.x = 0
 	get_node("%Image").update()
 
