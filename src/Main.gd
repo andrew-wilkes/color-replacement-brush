@@ -24,7 +24,7 @@ func _init():
 func _ready():
 	get_node("%TargetColor").color = settings.target_color
 	get_node("%Similarity").value = settings.similarity
-	get_node("%Proximity").value = log(settings.proximity) / log(2)
+	get_node("%Proximity").value = settings.proximity
 	get_node("%ReplacementColor").color = settings.replacement_color
 	Input.use_accumulated_input = true
 
@@ -114,8 +114,7 @@ func _on_Similarity_value_changed(value):
 
 
 func _on_Proximity_value_changed(value):
-	if cells.size() > 0:
-		settings.proximity = value
+	settings.proximity = value
 
 
 func _on_TargetColor_color_changed(color):
