@@ -23,9 +23,11 @@ func _init():
 
 func _ready():
 	get_node("%TargetColor").color = settings.target_color
+	set_target_color(settings.target_color)
 	get_node("%Similarity").value = settings.similarity
 	get_node("%Proximity").value = settings.proximity
 	get_node("%ReplacementColor").color = settings.replacement_color
+	set_replacement_color(settings.replacement_color)
 	Input.use_accumulated_input = true
 
 
@@ -107,6 +109,7 @@ func _on_HelpDialog_popup_hide():
 
 func _on_Similarity_value_changed(value):
 	settings.similarity = value
+	get_node("%Image").material.set_shader_param("deviance", 1.0 - value)
 
 
 func _on_Proximity_value_changed(value):
@@ -114,11 +117,21 @@ func _on_Proximity_value_changed(value):
 
 
 func _on_TargetColor_color_changed(color):
+	set_target_color(color)
+
+
+func set_target_color(color):
 	settings.target_color = color
+	get_node("%Image").material.set_shader_param("target_color", color)
 
 
 func _on_ReplacementColor_color_changed(color):
+	set_replacement_color(color)
+
+
+func set_replacement_color(color):
 	settings.replacement_color = color
+	get_node("%Image").material.set_shader_param("replacement_color", color)
 
 
 func disable_viewport_input(disable = true):
@@ -140,6 +153,7 @@ func init_cells(_area: Vector2):
 	cells.resize(num_rows * num_cols)
 	for idx in cells.size():
 		cells[idx] = 0
+	set_shader_data()
 
 
 func update_cells(x, y, add):
@@ -154,7 +168,25 @@ func update_cells(x, y, add):
 				update_cell(col + x, row + y, cell_value)
 	else:
 		update_cell(col, row, cell_value)
-	update_rects()
+	set_shader_data()
+	#update_rects()
+
+
+func set_shader_data():
+	get_node("%Image").material.set_shader_param("cells", get_data_texture())
+
+
+var not_saved = true
+
+func get_data_texture():
+	var img = Image.new()
+	img.create_from_data(num_cols, num_rows, false, Image.FORMAT_R8, cells) # Only use the red component
+	if not_saved and Input.is_key_pressed(KEY_S):
+		img.save_png("res:test.png")
+		not_saved = false
+	var texture = ImageTexture.new()
+	texture.create_from_image(img, 0)
+	return texture
 
 
 func update_cell(col, row, cell_value):
@@ -188,3 +220,19 @@ func _on_Main_resized():
 
 func _on_Timer_timeout():
 	$VP/Viewport.size = $VP.rect_size
+
+
+func _on_TargetColor_popup_closed():
+	disable_viewport_input(false)
+
+
+func _on_ReplacementColor_popup_closed():
+	disable_viewport_input(false)
+
+
+func _on_TargetColor_pressed():
+	disable_viewport_input()
+
+
+func _on_ReplacementColor_pressed():
+	disable_viewport_input()
