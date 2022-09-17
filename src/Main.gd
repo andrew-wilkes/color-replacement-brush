@@ -60,6 +60,11 @@ func _on_FileDialog_file_selected(path):
 			load_image(path)
 		SAVING:
 			settings.save_dir = path.get_base_dir()
+			var img = $VP/Viewport.get_texture().get_data()
+			var isize = get_node("%Image").rect_size
+			img.flip_y()
+			img.crop(isize.x, isize.y)
+			img.save_png(path)
 
 
 func load_image(path):
