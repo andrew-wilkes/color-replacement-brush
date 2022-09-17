@@ -13,15 +13,12 @@ uniform vec4 replacement_color : hint_color;
 uniform float deviance; // 0 - 1
 
 void fragment() {
-	float v = texture(cells, UV).r;
-	vec4 c = texture(TEXTURE, UV);
-	COLOR = c;
-	if (v > 0.5) {
-		float diff = length(target_color - c);
-		if (diff < deviance) {
-			COLOR = replacement_color;
-		}
-	}
+	float cell_value = texture(cells, UV).r; // The cell value is 0 or 1
+	vec4 color = texture(TEXTURE, UV); // Get the color of the underlying image
+	if (cell_value > 0.5 && length(target_color - color) < deviance)
+		COLOR = replacement_color;
+	else
+		COLOR = color;
 }
 "
 
