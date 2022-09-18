@@ -121,11 +121,11 @@ func _on_Image_gui_input(event):
 
 
 func _on_Help_pressed():
-	$VP/Viewport.gui_disable_input = true
-	$c/HelpDialog.popup_centered()
+	disable_viewport_input()
+	$c/AboutDialog.popup_centered()
 
 
-func _on_HelpDialog_popup_hide():
+func _on_AboutDialog_popup_hide():
 	disable_viewport_input(false)
 
 
@@ -246,3 +246,7 @@ func _on_ReplacementColor_pressed():
 
 func _on_HideMarker_timeout():
 	get_node("%Image").material.set_shader_param("marker_position", Vector2(-100000, -100000))
+
+
+func _on_Author_meta_clicked(meta):
+	var _e = OS.shell_open(str(meta))
