@@ -201,23 +201,6 @@ func update_cell(col, row, cell_value):
 		cells[col + num_cols * row] = cell_value
 
 
-# Temporary until the shader is written
-func update_rects():
-	var rects = get_node("%Image").rects
-	var size = Vector2(CELL_SIZE, CELL_SIZE)
-	rects.clear()
-	var pos = Vector2.ZERO
-	var idx = 0
-	for row in num_rows:
-		for col in num_cols:
-			if cells[idx] > 0:
-				rects.append(Rect2(pos, size))
-			pos.x += CELL_SIZE
-			idx += 1
-		pos.y += CELL_SIZE
-		pos.x = 0
-
-
 func update_cursor_overlay(col, row):
 	var size = CELL_SIZE if settings.proximity == 0 else (settings.proximity * 2 + 1) * CELL_SIZE
 	var offset = settings.proximity
@@ -228,7 +211,7 @@ func update_cursor_overlay(col, row):
 func _on_Main_resized():
 	# Allow the Viewport to be reduced in size and throttle how often it does so
 	$VP/Viewport.size = Vector2.ZERO
-	$Timer.start()
+	$ViewportSizer.start()
 
 
 func _on_ViewportSizer_timeout():
