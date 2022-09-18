@@ -244,8 +244,7 @@ wait_time = 0.214
 one_shot = true
 
 [node name="HideMarker" type="Timer" parent="."]
-wait_time = 0.1
-autostart = true
+wait_time = 0.5
 
 [connection signal="resized" from="." to="." method="_on_Main_resized"]
 [connection signal="pressed" from="Panel/M/VB/About" to="." method="_on_Help_pressed"]

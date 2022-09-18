@@ -14,6 +14,8 @@ var cells = PoolByteArray()
 var num_rows = 32
 var num_cols = 32
 var area
+var marker_col
+var marker_row
 
 func _init():
 	settings = Settings.new()
@@ -99,13 +101,23 @@ func save_and_quit():
 func _on_Image_gui_input(event):
 	if event is InputEventMouseMotion:
 		cursor_position = event.position
-		var col = int(cursor_position.x / CELL_SIZE)
-		var row = int(cursor_position.y / CELL_SIZE)
+		marker_col = int(cursor_position.x / CELL_SIZE)
+		marker_row = int(cursor_position.y / CELL_SIZE)
 		var mouse_state = Input.get_mouse_button_mask()
 		if mouse_state > 0:
-			update_cells(col, row, mouse_state == BUTTON_MASK_LEFT)
-		update_cursor_overlay(col, row)
+			update_cells(marker_col, marker_row, mouse_state & 5 > 0) # Left and middle mouse buttons to Add
+		update_cursor_overlay(marker_col, marker_row)
 		get_node("%Image").update()
+	# Use mouse wheel to alter proximity value
+	if event is InputEventMouseButton:
+		match event.button_index:
+			4:
+				get_node("%Proximity").value = settings.proximity + 1
+			5:
+				get_node("%Proximity").value = settings.proximity - 1
+		update_cursor_overlay(marker_col, marker_row)
+		get_node("%Image").update()
+	$HideMarker.start()
 
 
 func _on_Help_pressed():
