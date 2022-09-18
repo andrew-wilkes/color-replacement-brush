@@ -109,7 +109,7 @@ func _on_Image_gui_input(event):
 		update_cursor_overlay(marker_col, marker_row)
 		get_node("%Image").update()
 	# Use mouse wheel to alter proximity value
-	if event is InputEventMouseButton:
+	if event is InputEventMouseButton and event.pressed:
 		match event.button_index:
 			4:
 				get_node("%Proximity").value = settings.proximity + 1
@@ -182,12 +182,10 @@ func update_cells(col, row, add):
 	# Note: holding the mouse button down and moving outside of the grid
 	# still causes calls to be made but it doesn't matter
 	var cell_value = 0xff if add else 0
-	if settings.proximity > 0:
-		for y in range(-settings.proximity, settings.proximity + 1):
-			for x in range(-settings.proximity, settings.proximity + 1):
-				update_cell(col + x, row + y, cell_value)
-	else:
-		update_cell(col, row, cell_value)
+	var offset = int(settings.proximity / 2.0)
+	for y in settings.proximity:
+			for x in settings.proximity:
+				update_cell(col + x - offset, row + y - offset, cell_value)
 	set_shader_data()
 
 
@@ -214,8 +212,8 @@ func update_cell(col, row, cell_value):
 
 
 func update_cursor_overlay(col, row):
-	var size = CELL_SIZE if settings.proximity == 0 else (settings.proximity * 2 + 1) * CELL_SIZE
-	var offset = settings.proximity
+	var size = settings.proximity * CELL_SIZE
+	var offset = int(settings.proximity / 2.0)
 	get_node("%Image").material.set_shader_param("marker_position", Vector2(col - offset, row - offset) * CELL_SIZE)
 	get_node("%Image").material.set_shader_param("marker_size", size)
 
