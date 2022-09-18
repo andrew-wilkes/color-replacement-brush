@@ -12,7 +12,6 @@ uniform sampler2D cells;
 uniform vec4 target_color : hint_color;
 uniform vec4 replacement_color : hint_color;
 uniform float deviance; // 0 - 1
-uniform vec4 marker_color : hint_color;
 uniform vec2 marker_position;
 uniform float marker_size;
 uniform float marker_width = 2.0;
@@ -32,7 +31,7 @@ void fragment() {
 	if (v.y > m.y - w2 && v.y < m.y + w2 && v.x > m.x - w2 && v.x < m.x + w2 + marker_size) on_marker = 1.0;
 	if (v.y > m.y - w2 + marker_size && v.y < m.y + w2 + marker_size && v.x > m.x - w2 && v.x < m.x + w2 + marker_size) on_marker = 1.0;
 	if (on_marker > 0.5)
-		color *= marker_color;
+		color *= replacement_color;
 	COLOR = color;
 }
 "
@@ -42,7 +41,6 @@ shader = SubResource( 1 )
 shader_param/target_color = null
 shader_param/replacement_color = null
 shader_param/deviance = null
-shader_param/marker_color = Color( 1, 0, 0, 0.717647 )
 shader_param/marker_position = Vector2( 0.1, 0 )
 shader_param/marker_size = null
 shader_param/marker_width = 2.0
