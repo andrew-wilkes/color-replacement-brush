@@ -7,7 +7,7 @@ const FILENAME = "user://settings.res"
 export var load_dir = ""
 export var save_dir = ""
 export var similarity = 0.0
-export var proximity = 1 # How many grid cells around the target to affect
+export var proximity = 1 # Width of capture square
 export var target_color = Color.white
 export var replacement_color = Color.green
 

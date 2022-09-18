@@ -244,7 +244,7 @@ bbcode_enabled = true
 bbcode_text = "[b]Map[/b]
 
 Take a screenshot of a section of an online map and save it as an image to your computer.
-Then, load this image into this App.
+Then load this image into this App.
 
 [b]Highlighting roads[/b]
 
@@ -269,7 +269,7 @@ Vary the proximity slider or use your mouse wheel to adjust the capture area aro
 text = "Map
 
 Take a screenshot of a section of an online map and save it as an image to your computer.
-Then, load this image into this App.
+Then load this image into this App.
 
 Highlighting roads
 
