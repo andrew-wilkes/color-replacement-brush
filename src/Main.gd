@@ -2,7 +2,6 @@ extends HBoxContainer
 
 enum { SAVING, LOADING }
 
-const DEAD_ZONE = Vector2(8, 8) # To be able to detect mouse movements before exiting the image area
 const CELL_SIZE = 4 # e.g. 4 x 4 pixels square
 
 onready var file_dialog: FileDialog = $c/FileDialog
@@ -60,11 +59,7 @@ func _on_FileDialog_file_selected(path):
 			load_image(path)
 		SAVING:
 			settings.save_dir = path.get_base_dir()
-			var img = $VP/Viewport.get_texture().get_data()
-			var isize = get_node("%Image").rect_size
-			img.flip_y()
-			img.crop(isize.x, isize.y)
-			img.save_png(path)
+			save_image(path)
 
 
 func load_image(path):
@@ -74,6 +69,14 @@ func load_image(path):
 	texture.create_from_image(image)
 	get_node("%Image").texture = texture
 	init_cells(image.get_size())
+
+
+func save_image(path):
+	var img = $VP/Viewport.get_texture().get_data()
+	var isize = get_node("%Image").rect_size
+	img.flip_y()
+	img.crop(isize.x, isize.y)
+	img.save_png(path)
 
 
 func _unhandled_input(event):
@@ -96,11 +99,13 @@ func save_and_quit():
 func _on_Image_gui_input(event):
 	if event is InputEventMouseMotion:
 		cursor_position = event.position
-		# May not need this unless wanting to display an overlay around the cursor
-		cursor_visible = Rect2(DEAD_ZONE, $VP.rect_size - 2 * DEAD_ZONE).has_point(cursor_position)
+		var col = int(cursor_position.x / CELL_SIZE)
+		var row = int(cursor_position.y / CELL_SIZE)
 		var mouse_state = Input.get_mouse_button_mask()
 		if mouse_state > 0:
-			update_cells(cursor_position.x, cursor_position.y, mouse_state == BUTTON_MASK_LEFT)
+			update_cells(col, row, mouse_state == BUTTON_MASK_LEFT)
+		update_cursor_overlay(col, row)
+		get_node("%Image").update()
 
 
 func _on_Help_pressed():
@@ -161,9 +166,7 @@ func init_cells(_area: Vector2):
 	set_shader_data()
 
 
-func update_cells(x, y, add):
-	var col = int(x / CELL_SIZE)
-	var row = int(y / CELL_SIZE)
+func update_cells(col, row, add):
 	# Note: holding the mouse button down and moving outside of the grid
 	# still causes calls to be made but it doesn't matter
 	var cell_value = 0xff if add else 0
@@ -174,7 +177,6 @@ func update_cells(x, y, add):
 	else:
 		update_cell(col, row, cell_value)
 	set_shader_data()
-	#update_rects()
 
 
 func set_shader_data():
@@ -214,7 +216,13 @@ func update_rects():
 			idx += 1
 		pos.y += CELL_SIZE
 		pos.x = 0
-	get_node("%Image").update()
+
+
+func update_cursor_overlay(col, row):
+	var size = CELL_SIZE if settings.proximity == 0 else (settings.proximity * 2 + 1) * CELL_SIZE
+	var offset = settings.proximity
+	get_node("%Image").material.set_shader_param("marker_position", Vector2(col - offset, row - offset) * CELL_SIZE)
+	get_node("%Image").material.set_shader_param("marker_size", size)
 
 
 func _on_Main_resized():
@@ -223,7 +231,7 @@ func _on_Main_resized():
 	$Timer.start()
 
 
-func _on_Timer_timeout():
+func _on_ViewportSizer_timeout():
 	$VP/Viewport.size = $VP.rect_size
 
 
@@ -241,3 +249,7 @@ func _on_TargetColor_pressed():
 
 func _on_ReplacementColor_pressed():
 	disable_viewport_input()
+
+
+func _on_HideMarker_timeout():
+	get_node("%Image").material.set_shader_param("marker_position", Vector2(-100000, -100000))
