@@ -22,7 +22,10 @@ _global_script_class_icons={
 
 config/name="Map Route Highlighter"
 run/main_scene="res://Main.tscn"
+boot_splash/image="res://assets/icons/main.png"
+boot_splash/fullsize=false
 config/icon="res://icon.png"
+config/windows_native_icon="res://assets/icons/icon.ico"
 
 [gui]
 
