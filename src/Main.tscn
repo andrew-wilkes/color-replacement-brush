@@ -149,7 +149,7 @@ margin_right = 90.0
 margin_bottom = 318.0
 min_value = 1.0
 max_value = 8.0
-value = 1.0
+value = 4.0
 
 [node name="Sp2" type="Control" parent="Panel/M/VB"]
 margin_top = 328.0

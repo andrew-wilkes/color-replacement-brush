@@ -6,8 +6,8 @@ const FILENAME = "user://settings.res"
 
 export var load_dir = ""
 export var save_dir = ""
-export var similarity = 0.0
-export var proximity = 1 # Width of capture square
+export var similarity = 0.8
+export var proximity = 4 # Width of capture square
 export var target_color = Color.white
 export var replacement_color = Color.green
 
