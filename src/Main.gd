@@ -162,6 +162,7 @@ func show_file_dialog():
 	file_dialog.current_path = ""
 	file_dialog.current_file = ""
 	file_dialog.popup_centered()
+	file_dialog.deselect_items()
 
 
 func _on_FileDialog_file_selected(path):
