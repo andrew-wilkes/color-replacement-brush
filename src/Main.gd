@@ -18,6 +18,7 @@ var num_cols = 32
 var area
 var marker_col
 var marker_row
+var saved = false
 
 func _init():
 	settings = Settings.new()
@@ -109,7 +110,10 @@ func _on_LoadImage_pressed():
 	file_dialog.mode = FileDialog.MODE_OPEN_FILE
 	file_dialog.current_dir = settings.load_dir
 	file_dialog.filters = PoolStringArray([INPUT_FILE_FILTERS])
+	file_dialog.current_path = ""
+	file_dialog.current_file = ""
 	show_file_dialog()
+	file_dialog.deselect_items()
 
 
 func _on_SaveImage_pressed():
@@ -118,6 +122,10 @@ func _on_SaveImage_pressed():
 	file_dialog.current_dir = settings.save_dir
 	file_dialog.filters = PoolStringArray([OUTPUT_FILE_FILTERS])
 	show_file_dialog()
+	if not saved:
+		file_dialog.current_path = ""
+		file_dialog.current_file = ""
+		file_dialog.deselect_items()
 
 
 func _on_Help_pressed():
@@ -159,10 +167,7 @@ func set_replacement_color(color):
 func show_file_dialog():
 	# Allow the popup to be closed after loading image
 	disable_viewport_input()
-	file_dialog.current_path = ""
-	file_dialog.current_file = ""
 	file_dialog.popup_centered()
-	file_dialog.deselect_items()
 
 
 func _on_FileDialog_file_selected(path):
@@ -171,9 +176,11 @@ func _on_FileDialog_file_selected(path):
 			settings.load_dir = path.get_base_dir()
 			load_image(path)
 			get_node("%SaveImage").disabled = false
+			saved = false
 		SAVING:
 			settings.save_dir = path.get_base_dir()
 			save_image(path)
+			saved = true
 
 
 func load_image(path):
