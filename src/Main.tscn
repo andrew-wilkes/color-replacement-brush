@@ -21,18 +21,20 @@ void fragment() {
 	vec4 color = texture(TEXTURE, UV); // Get the color of the underlying image
 	if (cell_value > 0.5 && length(target_color - color) < deviance)
 		color = replacement_color;
-	vec2 v = UV / TEXTURE_PIXEL_SIZE;
-		vec2 m = marker_position;
+	vec2 v = UV / TEXTURE_PIXEL_SIZE; // Get a position value related to pixel coordinates
+	// Shorten var names
+	vec2 m = marker_position;
 	float w = marker_width;
-	float on_marker = 0.0;
+	float on_marker = 0.0; // Use like a boolean value
 	float w2 = w / 2.0;
+	// Evaluate if we are over one of the 4 edge lines of our marker square
 	if (v.x > m.x - w2 && v.x < m.x + w2 && v.y > m.y - w2 && v.y < m.y + w2 + marker_size) on_marker = 1.0;
 	if (v.x > m.x - w2 + marker_size && v.x < m.x + w2 + marker_size && v.y > m.y - w2 && v.y < m.y + w2 + marker_size) on_marker = 1.0;
 	if (v.y > m.y - w2 && v.y < m.y + w2 && v.x > m.x - w2 && v.x < m.x + w2 + marker_size) on_marker = 1.0;
 	if (v.y > m.y - w2 + marker_size && v.y < m.y + w2 + marker_size && v.x > m.x - w2 && v.x < m.x + w2 + marker_size) on_marker = 1.0;
 	if (on_marker > 0.5)
-		color *= replacement_color;
-	COLOR = color;
+		color *= replacement_color; // Blend the marker color with the color so far
+	COLOR = color; // Apply the final color
 }
 "
 
@@ -182,9 +184,11 @@ margin_bottom = 466.0
 rect_min_size = Vector2( 0, 20 )
 
 [node name="SaveImage" type="Button" parent="Panel/M/VB"]
+unique_name_in_owner = true
 margin_top = 476.0
 margin_right = 90.0
 margin_bottom = 506.0
+disabled = true
 text = "Save Image"
 
 [node name="VP" type="ViewportContainer" parent="."]
@@ -263,7 +267,9 @@ Press ESC to close the color picker.
 [b]Features[/b]
 
 Save the highlighted map as a PNG file to your computer and share it.
+
 Vary the similarity slider to adjust how closely matching the image pixel color needs to be to the target color.
+
 Vary the proximity slider or use your mouse wheel to adjust the capture area around the mouse cursor."
 text = "Map
 
@@ -288,7 +294,9 @@ Press ESC to close the color picker.
 Features
 
 Save the highlighted map as a PNG file to your computer and share it.
+
 Vary the similarity slider to adjust how closely matching the image pixel color needs to be to the target color.
+
 Vary the proximity slider or use your mouse wheel to adjust the capture area around the mouse cursor."
 
 [node name="Author" type="RichTextLabel" parent="c/AboutDialog/TabContainer"]
@@ -302,12 +310,18 @@ margin_bottom = -4.0
 custom_fonts/bold_font = SubResource( 3 )
 custom_fonts/normal_font = ExtResource( 4 )
 bbcode_enabled = true
-bbcode_text = "This software was created by [b]Andrew Wilkes[/b] in September 2022.
+bbcode_text = "
+v1.0
+
+This software was created by [b]Andrew Wilkes[/b] in September 2022.
 
 If you enjoyed using this software, please consider [url=https://buymeacoffee.com/gdscriptdude]buying me a coffee[/url].
 
 Thanks!"
-text = "This software was created by Andrew Wilkes in September 2022.
+text = "
+v1.0
+
+This software was created by Andrew Wilkes in September 2022.
 
 If you enjoyed using this software, please consider buying me a coffee.
 

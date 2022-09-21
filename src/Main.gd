@@ -41,7 +41,8 @@ func _on_Image_gui_input(event):
 		marker_row = int(cursor_position.y / CELL_SIZE)
 		var mouse_state = Input.get_mouse_button_mask()
 		if mouse_state > 0:
-			update_cells(marker_col, marker_row, mouse_state & 5 > 0) # Left and middle mouse buttons to Add
+			# Left and middle mouse buttons to paint (1010 0000)
+			update_cells(marker_col, marker_row, mouse_state & 5 > 0)
 		update_cursor_overlay(marker_col, marker_row)
 		get_node("%Image").update()
 	# Use mouse wheel to alter proximity value
@@ -168,6 +169,7 @@ func _on_FileDialog_file_selected(path):
 		LOADING:
 			settings.load_dir = path.get_base_dir()
 			load_image(path)
+			get_node("%SaveImage").disabled = false
 		SAVING:
 			settings.save_dir = path.get_base_dir()
 			save_image(path)
