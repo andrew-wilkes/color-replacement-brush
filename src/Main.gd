@@ -246,10 +246,12 @@ func _on_ReplacementColor_popup_closed():
 
 func _on_TargetColor_pressed():
 	disable_viewport_input()
+	locate_popup("%TargetColor")
 
 
 func _on_ReplacementColor_pressed():
 	disable_viewport_input()
+	locate_popup("%ReplacementColor")
 
 
 func _on_HideMarker_timeout():
@@ -268,3 +270,10 @@ func disable_viewport_input(disable = true):
 
 func _on_FileDialog_popup_hide():
 	disable_viewport_input(false)
+
+
+func locate_popup(node):
+	yield(get_tree(), "idle_frame")
+	var popup = get_node(node).get_popup()
+	popup.rect_position = $VP.rect_position + ($VP.rect_size - popup.rect_size) / 2.0
+
