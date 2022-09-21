@@ -33,6 +33,8 @@ func _ready():
 	get_node("%ReplacementColor").color = settings.replacement_color
 	set_replacement_color(settings.replacement_color)
 	Input.use_accumulated_input = true
+	if OS.get_name() == "HTML5":
+		load_demo_image()
 
 
 func _on_Image_gui_input(event):
@@ -190,6 +192,13 @@ func load_image(path):
 		texture.create_from_image(image)
 		get_node("%Image").texture = texture
 		init_cells(image.get_size())
+
+
+func load_demo_image():
+	get_node("%Image").texture = load("res://assets/demo.png")
+	init_cells(Vector2(256, 256))
+	get_node("%SaveImage").disabled = false
+	saved = false
 
 
 func save_image(path):
